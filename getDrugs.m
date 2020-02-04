@@ -25,8 +25,6 @@ codeDir=fullfile(projectDir,'TestingDay','MedicationPreparation');
 fileDrugs=fullfile(codeDir,'randList.xlsx');
 fileLogRun=fullfile(codeDir,'runLog.xlsx');
 
-externalResearcherPath='C:\Users\danpap\Documents\GitHub\RandList';
-
 %if this is the fist time the script is run, the runData file does not
 %exist
 if ~exist(fileLogRun, 'file')
@@ -60,7 +58,12 @@ else
 end
 
 %% give information
+if saveScript==0
 fprintf('Hello %s! Another testing day? How exciting!\n',userS)
+else %message for person making the list
+fprintf('Hello %s! Make sure you have copy pasted the password of the excel file in this document!\n',userS)
+
+end
 prompt = '\n Could you please tell me the subject number?\n';
 subNo = input(prompt);
 
@@ -74,7 +77,6 @@ session = input(prompt2);
 if ~ismember(session,1:2)
     error('Session number must be 1 or 2')
 end
-
 
 %% ADD EXCEL PASSWORD HERE
 password='danae';
@@ -180,6 +182,8 @@ end
 copyfile(fullfile(codeDir,'getDrugs.m'),scriptName)
 % no access to source code
 pcode(scriptName)
+fprintf('Thank you %s! Make sure you delete getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
+
 end 
 
 clear

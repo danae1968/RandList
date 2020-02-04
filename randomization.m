@@ -7,10 +7,11 @@ function [randList]=randomization(N, Ndrugs)
 %control for matlab repeatability
 rng shuffle
 
+fprintf('Thanks for helping us with the list! We really appreciate it.\n Make sure you have typed the password in this document!\n Make sure previous versions of the excel files are deleted!')
+
 % where the randomization list should be saved
 outputFolder = '\\fileserver.dccn.nl\project\3024005.02\TestingDay\MedicationPreparation';
-outputFolder='C:\Users\danpap\Documents\GitHub\RandList';
-
+addpath(outputFolder)
 % name of output file
 outFilename = fullfile(outputFolder,'randList.xlsx');
 
@@ -34,4 +35,8 @@ end
 day2 = repmat(wrev(1:Ndrugs),1,N); day2=day2(index);
 randList = [subNo' day1' day2'];
 
+%WRITE PASSWORD HERE
+password='danae';
+
 xlswrite(outFilename,randList)
+xlsprotect(outFilename,'protect_file',password,password,0,1)
