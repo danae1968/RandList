@@ -26,6 +26,7 @@ drugDir=fullfile(projectDir,'TestingDay','MedicationPreparation');addpath(drugDi
 fileDrugs=fullfile(drugDir,'randList.xlsx');
 fileLogRun=fullfile(drugDir,'runLog.xlsx');
 
+
 %if this is the fist time the script is run, the runData file does not
 %exist
 if exist(fileLogRun, 'file')==0
@@ -200,6 +201,11 @@ if saveScript
         fprintf('Thank you %s! Make sure you remove getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
     end
     
-end
 
+
+copyfile(fullfile(codeDir,'getDrugs.m'),scriptName)
+% no access to source code
+pcode(scriptName)
+fprintf('Thank you %s! Make sure you delete getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
+end 
 clear

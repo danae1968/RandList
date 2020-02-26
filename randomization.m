@@ -11,6 +11,7 @@ fprintf('Thanks for helping us with the list! We really appreciate it.\n Make su
 
 % where the randomization list should be saved
 outputFolder = '\\fileserver.dccn.nl\project\3024005.02\TestingDay\MedicationPreparation';addpath(outputFolder)
+
 % name of output file
 outFilename = fullfile(outputFolder,'randList.xlsx');
 
