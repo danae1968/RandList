@@ -6,14 +6,16 @@ B. Generate Script that provides drug for specific session/subject combination a
 
 
 # Step 1: 
-Go to the randomization.m script and **modify the outputFolder** variable with the directory you want to save the list in. Run the randomization.m script: randomization(N, Ndrugs). N is the number of subjects, Ndrugs the number of drugs. 
+Go to the randomization.m script in P:\3024005.02\Taskcode\RandList and **add your selected password** in the indicated section (type password here).
+Run the randomization.m script: randomization(N, Ndrugs). N is the number of subjects, Ndrugs the number of drugs. 
 In our case you should run: **randomization(30,2)**. The output is "randList.xlsx" file that should be an N by ndrugs+1 matrix (30x3). The first column should be the subject number and the other two the sessions.
+Check that it is the case. 
 
 # Step 2
-Pick a password and **password protect the excel file: randList.xlsx**. Then go to the script getDrugs.m. **Adapt the directories** of this section:%% fill in here relevant pathways to match the directory in which you saved the file and **run the script**. 
+Go to the script getDrugs.m. **Copy paste the password from the previous script** in the section %% ADD EXCEL PASSWORD HERE and **run the script**. 
 
 # Step 3
-Store getDrugsF.m script that contains the password for the randomization list in a save directory of your computer. Very important that it is not lost. 
+Remove the randomization.m, the getDrugs.m script and the getDrugsF.m scripts from the P drive and store them in a safe directory of your computer. Very important that they are not lost. 
 
 # Step 4
-Provide the researchers with getDrugs.p, randList.xlsx and runLog.xlsx files.
+Run getDrugsF.p to see if it works!

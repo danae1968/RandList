@@ -1,8 +1,8 @@
 %if original name of script save a copy, if final not
-clear 
+clear
 
 if strcmp(mfilename,'getDrugs')
-saveScript=1;
+    saveScript=1;
 elseif strcmp(mfilename,'getDrugsF')
     saveScript=0;
 end
@@ -21,14 +21,14 @@ else
 end
 
 %% fill in here relevant pathways
-codeDir=fullfile(projectDir,'Danae','Code');
-codeDir='C:\Users\danpap\Documents\GitHub\RandList';
-fileDrugs=fullfile(codeDir,'randList.xlsx');
-fileLogRun=fullfile(codeDir,'runLog.xlsx');
+codeDir=fullfile(projectDir,'Taskcode','RandList');addpath(codeDir)
+drugDir=fullfile(projectDir,'TestingDay','MedicationPreparation');addpath(drugDir)
+fileDrugs=fullfile(drugDir,'randList.xlsx');
+fileLogRun=fullfile(drugDir,'runLog.xlsx');
 
 %if this is the fist time the script is run, the runData file does not
 %exist
-if ~exist(fileLogRun, 'file')
+if exist(fileLogRun, 'file')==0
     xlswrite(fileLogRun,{'date','user','subNo','session'},1,'A1:D1')
 end
 %% find users
@@ -36,7 +36,7 @@ if ispc
     username=getenv('username');
 elseif isunix
     [~,username]=system('whoami');
-    username(end)=[]; 
+    username(end)=[];
 end
 
 if strcmp(username,'evakli')
@@ -51,15 +51,29 @@ elseif strcmp(username,'richel')
     userS = 'Rick';
 elseif strcmp(username,'frenie')
     userS = 'Freek';
-elseif strcmp(username,'anovhei')
+elseif strcmp(username,'anovdhei')
     userS = 'Anouk';
-    
-else
+elseif strcmp(username,'ninvlie')
+    userS = 'Nina';
+elseif strcmp(username,'marjoh')
+    userS = 'Martin';
+elseif strcmp(username,'vicsue')
+    userS = 'Victoria';
+elseif strcmp(username,'jortic')
+    userS = 'Jorryt';
+elseif strcmp(username,'chrisa')
+    userS = 'Christina';
+else   
     error('I am sorry %s you do not have access to use this code!',userS)
 end
 
 %% give information
-fprintf('Hello %s! Another testing day? How exciting!\n',userS)
+if saveScript==0
+    fprintf('Hello %s! Another testing day? How exciting!\n',userS)
+else %message for person making the list
+    fprintf('Hello %s! Make sure you have copy pasted the password of the excel file in this document!\n',userS)
+    
+end
 prompt = '\n Could you please tell me the subject number?\n';
 subNo = input(prompt);
 
@@ -73,7 +87,6 @@ session = input(prompt2);
 if ~ismember(session,1:2)
     error('Session number must be 1 or 2')
 end
-
 
 %% ADD EXCEL PASSWORD HERE
 password='danae';
@@ -120,7 +133,7 @@ xlsprotect(fileLogRun,'unprotect_file',known_password,password)
 Excel = actxserver('Excel.Application');
 set(Excel,'Visible',0);
 
- Workbook = invoke(Excel.Workbooks,'open',fileLogRun);
+Workbook = invoke(Excel.Workbooks,'open',fileLogRun);
 
 % Make the first sheet active
 eSheets = Excel.ActiveWorkbook.Sheets;
@@ -155,30 +168,38 @@ invoke(Workbook, 'Save');
 
 %close all
 invoke(Excel,'Quit');
-delete(Excel);    
-    
+delete(Excel);
+
 %protect again and save
 xlsprotect(fileLogRun,'protect_file',known_password,password,0,1)
 
 %kill excel if bug
 [taskstate, taskmsg] = system('tasklist|findstr "EXCEL.EXE"');
 if ~isempty(taskmsg)
-  status = system('taskkill /F /IM EXCEL.EXE');
+    status = system('taskkill /F /IM EXCEL.EXE');
 end
 
 
 %% if this is the first time the script is run, save a copy of this script with the password and protect the source code
 if saveScript
     
-scriptName=fullfile(codeDir,'getDrugsF.m');
-
-if exist(scriptName,'file')
-warning('Final version already exists')
+    scriptName=fullfile(codeDir,'getDrugsF.m');
+    
+    if exist(scriptName,'file')
+        warning('Final version already exists')
+    end
+    
+    copyfile(fullfile(codeDir,'getDrugs.m'),scriptName)
+    % no access to source code
+    pcode(scriptName)
+    pName=fullfile(codeDir, 'getDrugsF.p');
+    pNameFin=fullfile(drugDir,'getDrugsF.p');
+    copyfile(pName,pNameFin)
+    
+    if saveScript
+        fprintf('Thank you %s! Make sure you remove getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
+    end
+    
 end
-
-copyfile(fullfile(codeDir,'getDrugs.m'),scriptName)
-% no access to source code
-pcode(scriptName)
-end 
 
 clear
