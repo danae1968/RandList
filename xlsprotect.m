@@ -107,13 +107,11 @@ set(Excel,'Visible',0);
 % ---------------
 if strcmp(option,'protect_file')
     Workbook = invoke(Excel.Workbooks,'open',file);
-    tempName=sprintf('temp%d.xls',randi(1000,1));
-    invoke(Excel.ActiveWorkbook,'SaveAs',[out_path filesep tempName],[],varargin{1},varargin{2},varargin{3},varargin{4},1,1,1,1,1);
+    invoke(Excel.ActiveWorkbook,'SaveAs',[out_path filesep 'temp000.xls'],[],varargin{1},varargin{2},varargin{3},varargin{4},1,1,1,1,1);
     invoke(Excel,'Quit');
     delete(Excel);
     eval(['delete ''' file '''']);
-    movefile([out_path filesep tempName], file,'f');
-    
+     movefile([out_path filesep 'temp000.xls'], file,'f');    
 % ---------------
 % Unprotect File
 % ---------------    
@@ -123,12 +121,11 @@ elseif strcmp(option,'unprotect_file')
     elseif length(varargin)==2
         Workbook = invoke(Excel.Workbooks,'open',file,0,0,1,varargin{1},varargin{2});
     end
-    tempNameUn=sprintf('temp%d.xls',randi(1000,1)); 
-    invoke(Excel.ActiveWorkbook,'SaveAs',[out_path filesep tempNameUn],[],'','',0,0,1,1,1,1,1);
+    invoke(Excel.ActiveWorkbook,'SaveAs',[out_path filesep 'temp000.xls'],[],'','',0,0,1,1,1,1,1);
     invoke(Excel,'Quit');
     delete(Excel);
     eval(['delete ''' file '''']);
-    movefile([out_path filesep tempNameUn], file,'f');
+    movefile([out_path filesep 'temp000.xls'], file,'f');
     
     
 % ---------------
@@ -148,14 +145,14 @@ elseif strcmp(option,'protect_sheet')
     if length(varargin)==3
         password = varargin{2};
         s_options = varargin{3};
-        for k=1:length(s_options);
+        for k=1:length(s_options)
             op(k) = s_options(k);
         end
     elseif length(varargin)==2
         if isnumeric(varargin{2})
             s_options = varargin{2};
             password = '';
-            for k=1:length(s_options);
+            for k=1:length(s_options)
                 op(k) = s_options(k);
             end
         else

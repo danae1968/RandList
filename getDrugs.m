@@ -1,6 +1,9 @@
 %if original name of script save a copy, if final not
 clear
 
+%control for matlab repeatability
+rng shuffle
+
 if strcmp(mfilename,'getDrugs')
     saveScript=1;
 elseif strcmp(mfilename,'getDrugsF')
@@ -64,7 +67,7 @@ elseif strcmp(username,'jortic')
     userS = 'Jorryt';
 elseif strcmp(username,'chrisa')
     userS = 'Christina';
-else   
+else
     error('I am sorry %s you do not have access to use this code!',userS)
 end
 
@@ -99,7 +102,7 @@ xlsprotect(fileDrugs,'unprotect_file',password,password)
 Excel = actxserver('excel.application');
 set(Excel,'Visible',0);
 
-workbook = Excel.Workbooks.Open(fileDrugs, [], true, [], password);
+workbook = Excel.Workbooks.Open(fileDrugs, [], false, [], password,password);
 resultSheet='Sheet1';
 
 exlSheet1 = Excel.Sheets.Item(resultSheet);
@@ -117,9 +120,15 @@ codes=cell2mat(exlData);
 dropN=xlsread(fileDropOut);
 
 if numel(dropN)>1
-    testedSubs=codes(1:subNo-1,:);
+    %ensure only session 1 subjs are adjasted if necessary
+    if session==1
+        testedSubs=codes(1:subNo-1,:);
+        nonTestedSubs=codes(subNo:end,:);
+    elseif session==2
+        testedSubs=codes(1:subNo,:);
+        nonTestedSubs=codes(mod(subNo+1:end,31),:);
+    end
     testedTrue=testedSubs(~ismember(testedSubs(:,1),dropN),:); %remove dropouts
-    nonTestedSubs=codes(subNo:end,:);
     actualList=[testedTrue; nonTestedSubs];
     order=sum(actualList(:,2)==1)-sum(actualList(:,2)==2); %measure order counterbalancing after dropouts
     toAdjust=floor(abs(order/2));
@@ -128,47 +137,53 @@ if numel(dropN)>1
         if order<=-2
             surplusOrder=nonTestedSubs(nonTestedSubs(:,2)==2,:);
             %if we don't have enough subjects of the order to be adjusted
-            if length(surplusOrder)<=toAdjust
-                toAdjust=length(surplusOrder);
+            if size(surplusOrder,1)<=toAdjust
+                toAdjust=size(surplusOrder,1);
             end
-            adjSubs=randsample(surplusOrder(:,1),toAdjust);%subjects to adjust
-            codes(ismember(codes(:,1),adjSubs),3)=2;
-            codes(ismember(codes(:,1),adjSubs),2)=1;
-            
+            if toAdjust>0
+                ind = randsample(size(surplusOrder,1),toAdjust);
+                adjSubs=surplusOrder(ind,1);%subjects to adjust
+                codes(ismember(codes(:,1),adjSubs),3)=2;
+                codes(ismember(codes(:,1),adjSubs),2)=1;
+            end
             
         elseif order>=2
             surplusOrder=nonTestedSubs(nonTestedSubs(:,2)==1,:);
             %if we don't have enough subjects of the order to be adjusted
-            if length(surplusOrder)<=toAdjust
-                toAdjust=length(surplusOrder);
+            if size(surplusOrder,1)<=toAdjust
+                toAdjust=size(surplusOrder,1);
             end
-            adjSubs=randsample(surplusOrder(:,1),toAdjust);%subjects to adjust
-            codes(ismember(codes(:,1),adjSubs),3)=1;
-            codes(ismember(codes(:,1),adjSubs),2)=2;
+            if toAdjust>0
+                ind = randsample(size(surplusOrder,1),toAdjust);
+                adjSubs=surplusOrder(ind,1);%subjects to adjust
+                codes(ismember(codes(:,1),adjSubs),3)=1;
+                codes(ismember(codes(:,1),adjSubs),2)=2;
+            end
         end
         
-    rngObj.Value=codes;
-    Excel.DisplayAlerts = 0;
-    invoke(workbook, 'Save');
-    
+        rngObj.Value=codes;
+        Excel.DisplayAlerts = 0;
+        invoke(workbook, 'Save');
+        
+        %close all
+        invoke(Excel,'Quit');
+        delete(Excel);
+        
+        %protect again and save adjasted list
+        xlsprotect(fileDrugs,'protect_file',password,password,0,1)
+    end
+else
     %close all
     invoke(Excel,'Quit');
     delete(Excel);
-    
     %protect again and save adjasted list
     xlsprotect(fileDrugs,'protect_file',password,password,0,1)
     
-    %kill excel if bug
-    [taskstate, taskmsg] = system('tasklist|findstr "EXCEL.EXE"');
-    if ~isempty(taskmsg)
-        status = system('taskkill /F /IM EXCEL.EXE');
-    end
-    else
-    %close all
-invoke(Excel,'Quit');
-delete(Excel);
-    end
-    
+end
+%kill excel if bug
+[taskstate1, taskmsg] = system('tasklist|findstr "EXCEL.EXE"');
+if ~isempty(taskmsg)
+    status = system('taskkill /F /IM EXCEL.EXE');
 end
 %% find drug for this session
 drugNum=codes(codes(:,1)==subNo,session+1);
@@ -254,6 +269,6 @@ if saveScript
     copyfile(pName,pNameFin)
     
     
-fprintf('Thank you %s! Make sure you delete getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
-end 
+    fprintf('Thank you %s! Make sure you delete getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
+end
 clear
