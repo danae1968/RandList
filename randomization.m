@@ -7,7 +7,7 @@ function [randList]=randomization(N, Ndrugs)
 %control for matlab repeatability
 rng shuffle
 
-fprintf('Thanks for helping us with the list! We really appreciate it.\n Make sure you have typed the password in this document!\n Make sure previous versions of the excel files are deleted!')
+fprintf('Thanks for helping us with the list! We really appreciate it.\n Make sure you have typed the password in this script and copy it in getDrugs.m\n Make sure previous versions of the excel files are deleted!')
 
 % where the randomization list should be saved
 outputFolder = '\\fileserver.dccn.nl\project\3024005.02\TestingDay\MedicationPreparation';addpath(outputFolder)

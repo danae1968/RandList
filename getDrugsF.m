@@ -25,6 +25,7 @@ codeDir=fullfile(projectDir,'Taskcode','RandList');addpath(codeDir)
 drugDir=fullfile(projectDir,'TestingDay','MedicationPreparation');addpath(drugDir)
 fileDrugs=fullfile(drugDir,'randList.xlsx');
 fileLogRun=fullfile(drugDir,'runLog.xlsx');
+fileDropOut=fullfile(drugDir,'DropOuts.xlsx');
 
 %if this is the fist time the script is run, the runData file does not
 %exist
@@ -63,7 +64,7 @@ elseif strcmp(username,'jortic')
     userS = 'Jorryt';
 elseif strcmp(username,'chrisa')
     userS = 'Christina';
-else   
+else
     error('I am sorry %s you do not have access to use this code!',userS)
 end
 
@@ -94,9 +95,11 @@ password='danae';
 %% known password: do not modify this password!! Allows us to read, but not write the log file
 known_password='pd';
 %% activate activeX
+xlsprotect(fileDrugs,'unprotect_file',password,password)
 Excel = actxserver('excel.application');
+set(Excel,'Visible',0);
 
-workbook = Excel.Workbooks.Open(fileDrugs, [], true, [], password);
+workbook = Excel.Workbooks.Open(fileDrugs, [], false, [], password,password);
 resultSheet='Sheet1';
 
 exlSheet1 = Excel.Sheets.Item(resultSheet);
@@ -110,10 +113,72 @@ exlData = rngObj.Value;
 
 codes=cell2mat(exlData);
 
-%% close all
-invoke(Excel,'Quit');
-delete(Excel);
+%% see if there have been any dropouts and adjast future sessions if dropouts don't cancel out
+dropN=xlsread(fileDropOut);
 
+if numel(dropN)>1
+    %ensure only session 1 subjs are adjasted if necessary
+    if session==1
+        testedSubs=codes(1:subNo-1,:);
+        nonTestedSubs=codes(subNo:end,:);
+    elseif session==2
+        testedSubs=codes(1:subNo,:);
+        nonTestedSubs=codes(mod(subNo+1:end,31),:);
+    end
+    testedTrue=testedSubs(~ismember(testedSubs(:,1),dropN),:); %remove dropouts
+    actualList=[testedTrue; nonTestedSubs];
+    order=sum(actualList(:,2)==1)-sum(actualList(:,2)==2); %measure order counterbalancing after dropouts
+    toAdjust=floor(abs(order/2));
+    %find how many are left
+    if toAdjust>0
+        if order<=-2
+            surplusOrder=nonTestedSubs(nonTestedSubs(:,2)==2,:);
+            %if we don't have enough subjects of the order to be adjusted
+            if size(surplusOrder,1)<=toAdjust
+                toAdjust=size(surplusOrder,1);
+            end
+            ind = randsample(size(surplusOrder,1),1);
+            adjSubs=surplusOrder(ind,1);%subjects to adjust
+            codes(ismember(codes(:,1),adjSubs),3)=2;
+            codes(ismember(codes(:,1),adjSubs),2)=1;            
+            
+        elseif order>=2
+            surplusOrder=nonTestedSubs(nonTestedSubs(:,2)==1,:);
+            %if we don't have enough subjects of the order to be adjusted
+            if size(surplusOrder,1)<=toAdjust
+                toAdjust=size(surplusOrder,1);
+            end
+            ind = randsample(size(surplusOrder,1),1);
+            adjSubs=surplusOrder(ind,1);%subjects to adjust            
+            codes(ismember(codes(:,1),adjSubs),3)=1;
+            codes(ismember(codes(:,1),adjSubs),2)=2;
+        end
+        
+        rngObj.Value=codes;
+        Excel.DisplayAlerts = 0;
+        invoke(workbook, 'Save');
+        
+        %close all
+        invoke(Excel,'Quit');
+        delete(Excel);
+        
+        %protect again and save adjasted list
+        xlsprotect(fileDrugs,'protect_file',password,password,0,1)
+    end
+    else
+        %protect again and save adjasted list
+        xlsprotect(fileDrugs,'protect_file',password,password,0,1)
+        %close all
+        invoke(Excel,'Quit');
+        delete(Excel);    
+    
+end
+ %kill excel if bug
+        [taskstate1, taskmsg] = system('tasklist|findstr "EXCEL.EXE"');
+        if ~isempty(taskmsg)
+            status = system('taskkill /F /IM EXCEL.EXE');
+        end
+%% find drug for this session
 drugNum=codes(codes(:,1)==subNo,session+1);
 
 switch drugNum
@@ -196,10 +261,7 @@ if saveScript
     pNameFin=fullfile(drugDir,'getDrugsF.p');
     copyfile(pName,pNameFin)
     
-    if saveScript
-        fprintf('Thank you %s! Make sure you remove getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
-    end
     
+    fprintf('Thank you %s! Make sure you delete getDrugs.m and randomization.m scripts from the P drive \n and save them in your computer!\n',userS)
 end
-
 clear
