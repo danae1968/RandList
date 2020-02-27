@@ -18,4 +18,4 @@ Go to the script getDrugs.m. **Copy paste the password from the previous script*
 Remove the randomization.m, the getDrugs.m script and the getDrugsF.m scripts from the P drive and store them in a safe directory of your computer. Very important that they are not lost. 
 
 # Step 4
-Run getDrugsF.p to see if it works!
+Run getDrugsF.p to see if it works! (in P:\3024005.02\TestingDay\MedicationPreparation)
